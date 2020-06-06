@@ -9,7 +9,8 @@ async function createEntry() {
     try {
       await fs.mkdir(path.resolve(process.cwd(), "./src"));
     } catch (e) {}
-    const content = `export * from '${argv.pkg}';`;
+    const content = `import Default from '${argv.pkg}';
+export default Default;`;
     await fs.writeFile(
       path.resolve(process.cwd(), "./src/index.ts"),
       content,
