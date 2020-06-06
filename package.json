@@ -1,0 +1,30 @@
+{
+  "name": "ui-box-umd",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/index.js",
+  "files": [
+    "build/index.js",
+    "build/index.d.ts"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heineiuo/ui-box-umd.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/heineiuo/ui-box-umd/issues"
+  },
+  "homepage": "https://github.com/heineiuo/ui-box-umd#readme",
+  "devDependencies": {
+    "node-ts-scripts": "^0.12.1",
+    "semver": "^7.3.2",
+    "simple-git": "^2.5.0",
+    "yargs": "^15.3.1"
+  }
+}

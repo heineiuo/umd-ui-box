@@ -1,0 +1,82 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' ||
+      !startsWith(github.event.pull_request.head.label, 'heineiuo:')
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Cache
+        id: cache-node-modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: |
+          npm install
+        env:
+          CI: true
+
+      - name: Build
+        run: |
+          node scripts/install --pkg=ui-box
+          node scripts/create-entry --pkg=ui-box
+          echo 'Run node-ts-scripts bundle'
+          # node scripts/update-package --name=ui-box
+          ./node_modules/.bin/node-ts-scripts bundle src/index.ts --platform=browser --format=umd
+          # node scripts/update-package --name=ui-box-umd
+        env:
+          CI: true
+
+      - name: Create Changelogs
+        if: |
+          github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        id: changelog
+        uses: heineiuo/create-changelogs@master
+
+      - name: Login to NPM
+        if: |
+          github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo '//registry.npmjs.org/:_authToken=${{secrets.NPM_TOKEN}}' > ~/.npmrc
+          npm whoami
+      
+      - name: Publish to NPM
+        if: |
+          github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        run: |
+          npm publish
+
+      - name: Create Release
+        if: |
+          github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: ${{ steps.changelog.outputs.changelogs }}
+          draft: false
+          prerelease:
+            ${{ steps.changelog.outputs.release_type == 'prerelease' }}

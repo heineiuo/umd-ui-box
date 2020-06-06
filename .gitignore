@@ -1,0 +1,8 @@
+node_modules
+.DS_Store
+Thumb.db
+.cache
+*.log*
+build
+package-lock-backup.json
+src
